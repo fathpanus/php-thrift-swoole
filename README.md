@@ -4,5 +4,5 @@
 
 
 
-## 参与部分
+## 参考部分
 > [swoole/thrift-rpc-server](https://github.com/swoole/thrift-rpc-server)
