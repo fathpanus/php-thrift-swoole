@@ -1,0 +1,17 @@
+{
+    "name": "panus/thrift-php-swoole",
+    "description": "Thrift server implement by swoole",
+    "keywords": ["thrift", "rpc", "thrift swoole"],
+    "type": "library",
+    "require": {
+        "ext-swoole": "^1.9.1",
+        "php": ">=5.4.0"
+    },
+    "license": "BSD",
+    "authors": [
+        {
+            "name": "panus",
+            "email": "panus@163.com"
+        }
+    ]
+}
