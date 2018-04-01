@@ -1,5 +1,5 @@
 {
-    "name": "panus/thrift-php-swoole",
+    "name": "panus/php-thrift-swoole",
     "description": "基于Swoole的Thrift Server实现",
     "keywords": ["thrift", "rpc", "thrift swoole"],
     "type": "library",
