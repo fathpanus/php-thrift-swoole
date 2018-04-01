@@ -1,4 +1,5 @@
 <?php
+namespace SwooleThrift;
 
 use Thrift\Server\TServer;
 

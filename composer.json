@@ -4,10 +4,16 @@
     "keywords": ["thrift", "rpc", "thrift swoole"],
     "type": "library",
     "require": {
-        "ext-swoole": "^1.9.1",
+        "ext-swoole": "^1.8.1",
         "php": ">=5.4.0"
     },
-    "license": "BSD",
+    "autoload": {
+        "psr-4": {
+            "SwooleThrift\\": "src/SwooleThrift/",
+            "Thrift\\": "src/Thrift/"
+        }
+    },
+    "license": "MIT",
     "authors": [
         {
             "name": "panus",
