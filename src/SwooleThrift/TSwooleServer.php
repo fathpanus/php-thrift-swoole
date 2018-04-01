@@ -21,21 +21,35 @@ class TSwooleServer extends TServer
     {
         // TODO: Implement serve() method.
 //        $this->transport_->listen();
-        $this->server = new \swoole_server($this->transport_->getHost(),
-            $this->transport_->getPort()
-            );
         // 数据包格式：  pack('N', body_length) + body
         $default = [
             'worker_num'            => 2,
             'daemonize'             => true,
-            'dispatch_mode'         => 1, //1: 轮循, 3: 争抢
-            'open_length_check'     => true, //打开包长检测
-            'package_length_type'   => 'N', //长度的类型，参见PHP的pack函数
-            'package_length_offset' => 0,   //第N个字节是包长度的值
-            'package_body_offset'   => 4,   //从第几个字节计算长度
+            'dispatch_mode'         => 1,
+            'open_length_check'     => true,
+            'package_length_type'   => 'N',
+            'package_length_offset' => 0,
+            'package_body_offset'   => 4,
+            'http_server_port' => 8090,
         ];
         $setting = array_merge($default, $this->transport_->getSetting());
+        $httpServer = new \swoole_http_server($this->transport_->getHost(), $setting['http_server_port']);
+        $this->server = $httpServer->addListener($this->transport_->getHost(),
+            $this->transport_->getPort(),
+            SWOOLE_SOCK_TCP
+        );
+        //server status page
+        $httpServer->on('request', function(swoole_http_request $request, swoole_http_response $response) use($httpServer){
+            $status = $httpServer->stats();
+            $response->header('Content-type', 'application/json');
+            $response->write(json_encode($status));
+        });
+//        $this->server = new \swoole_server($this->transport_->getHost(),
+//            $this->transport_->getPort()
+//            );
         $this->server->set($setting);
+        $this->registerEvent();
+        $this->server->start();
     }
 
     public function handleRequest(\swoole_server $server, $fd, $reactorId, $data)
@@ -52,7 +66,7 @@ class TSwooleServer extends TServer
         try {
             $this->processor_->process($inputProtocol, $outputProtocol);
         } catch (\Exception $e) {
-            $log = "code: " . $e->getCode() . '--msg:' . $e->getMessage() . "\r\n" . $e->getTraceAsString();
+            $log = "remote call error: " . $e->getCode() . '--msg:' . $e->getMessage() . "\r\n" . $e->getTraceAsString();
             echo $log;
         }
         $this->server->close($fd);
@@ -61,6 +75,12 @@ class TSwooleServer extends TServer
     protected function registerEvent()
     {
         $this->server->on('Receive', [$this, 'handleRequest']);
+        $this->server->on('ManagerStart', function() {
+            swoole_set_process_name('thrift_server_swoole_master');
+        });
+        $this->server->on('WorkerStart', function() {
+            swoole_set_process_name('thrift_server_swoole_worker');
+        });
     }
 
     /**
