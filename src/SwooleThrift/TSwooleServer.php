@@ -27,13 +27,13 @@ class TSwooleServer extends TServer
             'worker_num'            => 2,
             'daemonize'             => true,
             'dispatch_mode'         => 1,
-            'open_length_check'     => true,
-            'package_length_type'   => 'N',
-            'package_length_offset' => 0,
-            'package_body_offset'   => 4,
             'http_server_port' => 8090,
         ];
         $setting = array_merge($default, $this->transport_->getSetting());
+        $setting['open_length_check'] = true;
+        $setting['package_length_type']   = 'N';
+        $setting['package_length_offset']   = 0;
+        $setting['package_body_offset']   = 4;
         $httpServer = new \swoole_http_server($this->transport_->getHost(), $setting['http_server_port']);
         $this->server = $httpServer->addListener($this->transport_->getHost(),
             $this->transport_->getPort(),
