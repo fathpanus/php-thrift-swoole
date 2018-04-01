@@ -6,6 +6,8 @@
 composer require panus/thrift-php-swoole
 ```
 
+
+
 ## 开启thrift_protocol扩展（可选）
 ```
 cd /thrift_root/lib/php/src/ext/thrift_protocol
@@ -35,6 +37,10 @@ stream {
     }   
 }
 ```
+
+## 注意事项
+* 由于传输层是用`TFramedTransport`，所以对应的客户端也是要采用该传输层
+
 
 ## 参考部分
 > [swoole/thrift-rpc-server](https://github.com/swoole/thrift-rpc-server)
