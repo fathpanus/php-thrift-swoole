@@ -73,6 +73,21 @@ stream {
 }
 ```
 
+## Server状态参数输出
+* 默认绑定的本地回环地址，端口为8090,可在setting 里设置`http_server_host`和`http_server_port`，不建绑在公网ip地址上
+* 响应如下，也就是`swoole_server->stats`
+``` 
+{
+    "start_time": 1522580115,
+    "connection_num": 2,
+    "accept_count": 2,
+    "close_count": 0,
+    "tasking_num": 0,
+    "request_count": 0,
+    "worker_request_count": 0
+}
+```
+
 ## 注意事项
 * 由于传输层是用`TFramedTransport`，所以对应的客户端也是要采用该传输层
 
