@@ -6,6 +6,41 @@
 composer require panus/thrift-php-swoole
 ```
 
+## 服务端示例
+* 生成服务端代码
+```
+thrift --gen php:server,psr4 order.thrift
+```
+* 业务层自行去实现生成的接口
+```
+$service = new OrderServiceImpl();
+$processor = new OrderServiceProcessor($service);
+
+$setting = [
+    
+    'log_file' => __DIR__.'/swoole.log',
+    'pid_file' => __DIR__.'/thrift.pid',
+];
+$socket_tranport = new \SwooleThrift\TSwooleServerTransport('0.0.0.0', 8192, $setting);
+$out_factory = $in_factory = new Thrift\Factory\TTransportFactory();
+$out_protocol = $in_protocol = new Thrift\Factory\TBinaryProtocolFactory();
+
+$server = new \SwooleThrift\TSwooleServer($processor, $socket_tranport, $in_factory, $out_factory, $in_protocol, $out_protocol);
+$server->serve();
+```
+
+## 客户端示例
+``` 
+$socket = new \Thrift\Transport\TSocket('192.168.0.101', 8100);
+$transport = new \Thrift\Transport\TFramedTransport($socket);
+$protocol = new \Thrift\Protocol\TBinaryProtocol($transport);
+$transport->open();
+
+$client = new OrderServiceClient($protocol);
+$client->implMethod(...);
+
+$client->close();
+```
 
 
 ## 开启thrift_protocol扩展（可选）
