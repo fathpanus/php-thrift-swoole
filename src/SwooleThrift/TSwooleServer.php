@@ -37,22 +37,26 @@ class TSwooleServer extends TServer
         $setting['package_body_offset']   = 4;
 
         $httpServer = new \swoole_http_server($setting['http_server_host'], $setting['http_server_port']);
-        $this->server = $httpServer->addListener($this->transport_->getHost(),
+        $tcpServer = $httpServer->addListener($this->transport_->getHost(),
             $this->transport_->getPort(),
             SWOOLE_SOCK_TCP
         );
+        $tcpServer->on('Receive', [$this, 'handleRequest']);
+//        $httpServer->on('ManagerStart', function() {
+//            swoole_set_process_name('thrift_server_swoole_master');
+//        });
+//        $httpServer->on('WorkerStart', function() {
+//            swoole_set_process_name('thrift_server_swoole_worker');
+//        });
         //server status page
         $httpServer->on('request', function(swoole_http_request $request, swoole_http_response $response) use($httpServer){
             $status = $httpServer->stats();
             $response->header('Content-type', 'application/json');
             $response->write(json_encode($status));
         });
-//        $this->server = new \swoole_server($this->transport_->getHost(),
-//            $this->transport_->getPort()
-//            );
-        $this->server->set($setting);
-        $this->registerEvent();
-        $this->server->start();
+        $tcpServer->set($setting);
+        $httpServer->start();
+        $this->server = $httpServer;
     }
 
     public function handleRequest(\swoole_server $server, $fd, $reactorId, $data)
@@ -73,17 +77,6 @@ class TSwooleServer extends TServer
             echo $log;
         }
         $this->server->close($fd);
-    }
-
-    protected function registerEvent()
-    {
-        $this->server->on('Receive', [$this, 'handleRequest']);
-        $this->server->on('ManagerStart', function() {
-            swoole_set_process_name('thrift_server_swoole_master');
-        });
-        $this->server->on('WorkerStart', function() {
-            swoole_set_process_name('thrift_server_swoole_worker');
-        });
     }
 
     /**

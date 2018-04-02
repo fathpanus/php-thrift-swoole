@@ -17,6 +17,7 @@ class TSwooleServerTransport extends TServerTransport
     {
         $this->host = $host;
         $this->port = $port;
+        $this->setSetting($setting);
     }
 
     /**
