@@ -39,7 +39,7 @@ $transport->open();
 $client = new OrderServiceClient($protocol);
 $client->implMethod(...);
 
-$client->close();
+$transport->close();
 ```
 
 
