@@ -3,7 +3,7 @@
 
 ## 安装
 ```
-composer require panus/thrift-php-swoole
+composer require panus/php-thrift-swoole
 ```
 
 ## 服务端示例
