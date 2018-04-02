@@ -31,41 +31,47 @@ class TSwooleServer extends TServer
             'http_server_host' => '127.0.0.1'
         ];
         $setting = array_merge($default, $this->transport_->getSetting());
-        $setting['open_length_check'] = true;
-        $setting['package_length_type']   = 'N';
-        $setting['package_length_offset']   = 0;
-        $setting['package_body_offset']   = 4;
-
         $httpServer = new \swoole_http_server($setting['http_server_host'], $setting['http_server_port']);
+        $httpServer->set($setting);
+
         $tcpServer = $httpServer->addListener($this->transport_->getHost(),
             $this->transport_->getPort(),
             SWOOLE_SOCK_TCP
         );
         $tcpServer->on('Receive', [$this, 'handleRequest']);
-//        $httpServer->on('ManagerStart', function() {
-//            swoole_set_process_name('thrift_server_swoole_master');
-//        });
-//        $httpServer->on('WorkerStart', function() {
-//            swoole_set_process_name('thrift_server_swoole_worker');
-//        });
+        $httpServer->on('ManagerStart', function() {
+            //osx warning
+            @swoole_set_process_name('thrift_server_swoole_manager');
+        });
+        $httpServer->on('WorkerStart', function() {
+            @swoole_set_process_name('thrift_server_swoole_worker');
+        });
         //server status page
         $httpServer->on('request', function(swoole_http_request $request, swoole_http_response $response) use($httpServer){
             $status = $httpServer->stats();
             $response->header('Content-type', 'application/json');
             $response->write(json_encode($status));
         });
-        $tcpServer->set($setting);
-        $httpServer->start();
+        $tcpSetting['open_length_check'] = true;
+        $tcpSetting['package_length_type']   = 'N';
+        $tcpSetting['package_length_offset']   = 0;
+        $tcpSetting['package_body_offset']   = 4;
+        $tcpServer->set($tcpSetting);
         $this->server = $httpServer;
+        $httpServer->start();
     }
 
     public function handleRequest(\swoole_server $server, $fd, $reactorId, $data)
     {
         /** @var TSwooleTransport $transport */
+//        /** @var FrameTransport $transport */
         $transport = $this->transport_->accept();
         $transport->setServer($server);
         $transport->setNetFD($fd);
         $transport->setData($data);
+//        $transport->setHandle($fd);
+//        $transport->server = $server;
+//        $transport->buffer = $data;
         $inputTransport = $this->inputTransportFactory_->getTransport($transport);
         $outputTranport = $this->outputTransportFactory_->getTransport($transport);
         $inputProtocol = $this->inputProtocolFactory_->getProtocol($inputTransport);
@@ -76,7 +82,7 @@ class TSwooleServer extends TServer
             $log = "remote call error: " . $e->getCode() . '--msg:' . $e->getMessage() . PHP_EOL. $e->getTraceAsString();
             echo $log;
         }
-        $this->server->close($fd);
+//        $this->server->close($fd);
     }
 
     /**

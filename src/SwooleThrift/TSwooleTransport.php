@@ -136,7 +136,7 @@ class TSwooleTransport extends TTransport
     {
         // TODO: Implement read() method.
         if (TStringFuncFactory::create()->strlen($this->rBuf_) === 0) {
-            $this->readFrame();
+            $this->_readFrame();
         }
 
         // Just return full buff
@@ -154,13 +154,13 @@ class TSwooleTransport extends TTransport
         return $out;
     }
 
-    private function readFrame()
+    private function _readFrame($len = 4)
     {
-        $buf = $this->readAll(4);
+        $buf = substr($this->data, 0, $len);
         $val = unpack('N', $buf);
         $sz = $val[1];
 
-        $this->rBuf_ = $this->readAll($sz);
+        $this->rBuf_ = substr($this->data, $len, $sz);
     }
 
     /**
@@ -176,6 +176,15 @@ class TSwooleTransport extends TTransport
             $buf = TStringFuncFactory::create()->substr($buf, 0, $len);
         }
         $this->wBuf_ .= $buf;
+    }
+
+    public function putBack($data)
+    {
+        if (TStringFuncFactory::create()->strlen($this->rBuf_) === 0) {
+            $this->rBuf_ = $data;
+        } else {
+            $this->rBuf_ = ($data . $this->rBuf_);
+        }
     }
 
     public function flush()
