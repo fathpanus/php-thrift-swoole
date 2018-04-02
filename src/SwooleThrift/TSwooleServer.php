@@ -22,7 +22,6 @@ class TSwooleServer extends TServer
     {
         // TODO: Implement serve() method.
 //        $this->transport_->listen();
-        // 数据包格式：  pack('N', body_length) + body
         $default = [
             'worker_num'            => 2,
             'daemonize'             => true,
@@ -33,6 +32,12 @@ class TSwooleServer extends TServer
         $setting = array_merge($default, $this->transport_->getSetting());
         $httpServer = new \swoole_http_server($setting['http_server_host'], $setting['http_server_port']);
         $httpServer->set($setting);
+        //server status page
+        $httpServer->on('request', function(\swoole_http_request $request, \swoole_http_response $response) use($httpServer){
+            $status = $httpServer->stats();
+            $response->header('Content-type', 'application/json');
+            $response->write(json_encode($status));
+        });
 
         $tcpServer = $httpServer->addListener($this->transport_->getHost(),
             $this->transport_->getPort(),
@@ -46,12 +51,8 @@ class TSwooleServer extends TServer
         $httpServer->on('WorkerStart', function() {
             @swoole_set_process_name('thrift_server_swoole_worker');
         });
-        //server status page
-        $httpServer->on('request', function(swoole_http_request $request, swoole_http_response $response) use($httpServer){
-            $status = $httpServer->stats();
-            $response->header('Content-type', 'application/json');
-            $response->write(json_encode($status));
-        });
+
+        // 数据包格式：  pack('N', body_length) + body
         $tcpSetting['open_length_check'] = true;
         $tcpSetting['package_length_type']   = 'N';
         $tcpSetting['package_length_offset']   = 0;
