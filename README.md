@@ -23,8 +23,8 @@ $setting = [
     'pid_file' => __DIR__.'/thrift.pid',
 ];
 $socket_tranport = new \SwooleThrift\TSwooleServerTransport('0.0.0.0', 8192, $setting);
-$out_factory = $in_factory = new Thrift\Factory\TTransportFactory();
-$out_protocol = $in_protocol = new Thrift\Factory\TBinaryProtocolFactory();
+$out_factory = $in_factory = new \Thrift\Factory\TTransportFactory();
+$out_protocol = $in_protocol = new \Thrift\Factory\TBinaryProtocolFactory();
 
 $server = new \SwooleThrift\TSwooleServer($processor, $socket_tranport, $in_factory, $out_factory, $in_protocol, $out_protocol);
 $server->serve();
@@ -73,6 +73,15 @@ stream {
     }   
 }
 ```
+
+## 进程控制
+* 关闭服务器： `kill -TERM {masterPid}`
+* 重启Worker进程： `kill -USR1 {masterPid}`
+* [官方的额外说明](https://wiki.swoole.com/wiki/page/p-server/reload.html)
+> 平滑重启只对onWorkerStart或onReceive等在Worker进程中include/require的PHP文件有效，Server启动前就已经include/require的PHP文件，不能通过平滑重启重新加载
+> 对于Server的配置即$serv->set()中传入的参数设置，必须关闭/重启整个Server才可以重新加载
+
+ 
 
 ## Server状态参数输出
 * 默认绑定的本地回环地址，端口为8090,可在setting 里设置`http_server_host`和`http_server_port`，不建绑在公网ip地址上
