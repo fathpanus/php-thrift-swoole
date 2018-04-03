@@ -16,8 +16,9 @@ thrift --gen php:server,psr4 order.thrift
 $service = new OrderServiceImpl();
 $processor = new OrderServiceProcessor($service);
 
+//swooler_server 里的配置选项参数，worker_num根据实际调用情况调节
 $setting = [
-    
+    'worker_num' => 4,
     'log_file' => __DIR__.'/swoole.log',
     'pid_file' => __DIR__.'/thrift.pid',
 ];
