@@ -21,7 +21,6 @@ class TSwooleServer extends TServer
     public function serve()
     {
         // TODO: Implement serve() method.
-//        $this->transport_->listen();
         $default = [
             'worker_num'            => 2,
             'daemonize'             => true,
@@ -65,25 +64,20 @@ class TSwooleServer extends TServer
     public function handleRequest(\swoole_server $server, $fd, $reactorId, $data)
     {
         /** @var TSwooleTransport $transport */
-//        /** @var FrameTransport $transport */
         $transport = $this->transport_->accept();
         $transport->setServer($server);
         $transport->setNetFD($fd);
         $transport->setData($data);
-//        $transport->setHandle($fd);
-//        $transport->server = $server;
-//        $transport->buffer = $data;
         $inputTransport = $this->inputTransportFactory_->getTransport($transport);
-        $outputTranport = $this->outputTransportFactory_->getTransport($transport);
+        $outputTransport = $this->outputTransportFactory_->getTransport($transport);
         $inputProtocol = $this->inputProtocolFactory_->getProtocol($inputTransport);
-        $outputProtocol = $this->outputProtocolFactory_->getProtocol($outputTranport);
+        $outputProtocol = $this->outputProtocolFactory_->getProtocol($outputTransport);
         try {
             $this->processor_->process($inputProtocol, $outputProtocol);
         } catch (\Exception $e) {
             $log = "remote call error: " . $e->getCode() . '--msg:' . $e->getMessage() . PHP_EOL. $e->getTraceAsString();
-            echo $log;
+            echo $log . PHP_EOL;
         }
-//        $this->server->close($fd);
     }
 
     /**
